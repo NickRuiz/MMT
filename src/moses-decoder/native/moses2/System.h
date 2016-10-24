@@ -40,7 +40,6 @@ public:
   const Parameter &params;
   AllOptions options;
   FeatureFunctions featureFunctions;
-  Weights weights;
   std::vector<const PhraseTable*> mappings;
 
   std::vector<size_t> maxChartSpans;
@@ -63,6 +62,8 @@ public:
 
   Batch &GetBatch(MemPool &pool) const;
 
+  const Weights &GetWeights() const { return weights; }
+
 protected:
   mutable FactorCollection m_vocab;
   mutable boost::thread_specific_ptr<MemPool> m_managerPool;
@@ -78,6 +79,8 @@ protected:
 
   void IsPb();
 
+private:
+  Weights weights;
 };
 
 }

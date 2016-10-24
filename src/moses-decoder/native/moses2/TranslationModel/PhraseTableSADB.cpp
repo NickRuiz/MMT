@@ -159,6 +159,9 @@ namespace Moses2 {
     }
 
     void PhraseTableSADB::InitializeForInput(const Manager &mgr) const {
+        // fetch feature weights
+        FeatureFunction::InitializeForInput(mgr);
+
         // moses2 keeps const pointers to feature functions, so we must be 'void() const' unless you change everything else.
         const_cast<PhraseTableSADB *>(this)->InitializeForInput(mgr);
     }

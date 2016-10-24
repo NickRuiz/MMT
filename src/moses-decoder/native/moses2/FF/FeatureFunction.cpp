@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include "FeatureFunction.h"
+#include "../PhraseBased/Manager.h"
 #include "../System.h"
 #include "../legacy/Util2.h"
 #include "util/exception.hh"
@@ -58,6 +59,15 @@ void FeatureFunction::ParseLine(const std::string &line)
       m_args.push_back(args);
     }
   }
+}
+
+void FeatureFunction::InitializeForInput(const Manager &mgr) const {
+  // moses2 keeps const pointers to feature functions, so we must be 'void() const' unless you change everything else.
+  const_cast<FeatureFunction *>(this)->InitializeForInput(mgr);
+}
+
+void FeatureFunction::InitializeForInput(const Manager &mgr) {
+  m_weights.reset(new std::vector<SCORE>(mgr.system.GetWeights().GetWeights(*this)));
 }
 
 void FeatureFunction::ReadParameters()

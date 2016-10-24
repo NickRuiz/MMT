@@ -13,6 +13,7 @@
 #include "../TypeDef.h"
 #include "../Phrase.h"
 #include <mmt/IncrementalModel.h>
+#include <boost/thread.hpp>
 
 namespace Moses2
 {
@@ -48,6 +49,10 @@ public:
   size_t GetStartInd() const
   {
     return m_startInd;
+  }
+  const SCORE *GetWeights() const
+  {
+    return m_weights.get()->data();
   }
   size_t GetNumScores() const
   {
@@ -107,7 +112,8 @@ public:
   {
   }
 
-  virtual void InitializeForInput(const Manager &mgr) const {}
+  //! you must call this from overrides, so feature gets its weights
+  virtual void InitializeForInput(const Manager &mgr) const;
 
   // clean up temporary memory, called after processing each sentence
   virtual void CleanUpAfterSentenceProcessing() const {}
@@ -125,10 +131,14 @@ protected:
   std::string m_name;
   std::vector<std::vector<std::string> > m_args;
   bool m_tuneable;
+  boost::thread_specific_ptr<std::vector<SCORE>> m_weights;
 
   virtual void SetParameter(const std::string& key, const std::string& value);
   virtual void ReadParameters();
   void ParseLine(const std::string &line);
+
+private:
+  void InitializeForInput(const Manager &mgr);
 };
 
 }
