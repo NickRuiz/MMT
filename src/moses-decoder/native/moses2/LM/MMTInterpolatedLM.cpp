@@ -32,6 +32,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../PhraseBased/Hypothesis.h"
 #include "../PhraseBased/Manager.h"
 #include "../PhraseBased/TargetPhraseImpl.h"
+#include "TranslationTask.h"
 
 #define ParseWord(w) (boost::lexical_cast<wid_t>((w)))
 
@@ -403,7 +404,7 @@ void MMTInterpolatedLM::InitializeForInput(const Manager &mgr) {
     SPTR<ContextScope> const &scope = ttask->GetScope();
     SPTR<weightmap_t const> weights = scope->GetContextWeights();
     */
-    SPTR<const weightmap_t> weights; // TODO get context weights
+    const weightmap_t *weights = &mgr.task.GetContextWeights();
 
     if (weights) {
         context_t *context_vec = new context_t;

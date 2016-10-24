@@ -51,6 +51,9 @@ namespace Moses2 {
             return m_pt;
         }
 
+        virtual void InitializeForInput(const Manager &mgr) const override;
+        void InitializeForInput(const Manager &mgr);
+
         virtual TargetPhrases *Lookup(const Manager &mgr, MemPool &pool,
                                       InputPath &inputPath) const override;
 

@@ -8,6 +8,7 @@
 #include "../PhraseBased/TargetPhrases.h"
 #include "../PhraseBased/TargetPhraseImpl.h"
 #include "../MemPool.h"
+#include "TranslationTask.h"
 
 #include <boost/lexical_cast.hpp>
 
@@ -154,6 +155,33 @@ namespace Moses2 {
             auto tps = MakeTargetPhrases(mgr, path->subPhrase, options->second);
             path->AddTargetPhrases(*this, tps);
           }
+        }
+    }
+
+    void PhraseTableSADB::InitializeForInput(const Manager &mgr) const {
+        // moses2 keeps const pointers to feature functions, so we must be 'void() const' unless you change everything else.
+        const_cast<PhraseTableSADB *>(this)->InitializeForInput(mgr);
+    }
+
+    void PhraseTableSADB::InitializeForInput(const Manager &mgr) {
+        // we assume here that translation is run in one single thread for each ttask
+        // (no parallelization at a finer granularity involving PhraseDictionarySADB)
+
+        // This function is called prior to actual translation and allows the class
+        // to set up thread-specific information such as context weights
+
+        // DO NOT modify members of 'this' here. We are being called from different
+        // threads, and there is no locking here.
+        const weightmap_t *weights = &mgr.task.GetContextWeights();
+
+        if (weights) {
+          context_t *context_vec = new context_t;
+
+          for (weightmap_t::const_iterator it = weights->begin(); it != weights->end(); ++it) {
+            context_vec->push_back(cscore_t(ParseWord(it->first), it->second));
+          }
+
+          t_context_vec.reset(context_vec);
         }
     }
 
