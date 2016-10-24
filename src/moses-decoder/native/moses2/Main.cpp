@@ -20,7 +20,7 @@ using namespace std;
 
 //extern size_t g_numHypos;
 
-int main(int argc, char** argv)
+int main(int argc, const char** argv)
 {
 	cerr << "Starting..." << endl;
 

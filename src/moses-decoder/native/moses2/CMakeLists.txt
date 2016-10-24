@@ -203,6 +203,8 @@ set(SOURCE_FILES
 #    LM/LanguageModelDALM.h
     LM/MMTInterpolatedLM.cpp
     LM/MMTInterpolatedLM.h
+    mmt/MosesDecoder.cpp
+    mmt/MosesDecoder.h
     MorphoTrie/MorphTrie.h
     MorphoTrie/Node.h
     MorphoTrie/utils.h
@@ -421,7 +423,7 @@ set(SOURCE_FILES
     Weights.cpp
     Weights.h
     Word.cpp
-    Word.h)
+    Word.h mmt/Translator.h)
 
 add_executable(moses2 ${SOURCE_FILES})
 target_link_libraries(moses2 pthread)

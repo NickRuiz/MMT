@@ -551,15 +551,15 @@ bool Parameter::isOption(const char* token)
 bool Parameter::LoadParam(const string &filePath)
 {
   const char *argv[] = { "executable", "-f", filePath.c_str() };
-  return LoadParam(3, (char**) argv);
+  return LoadParam(3, (const char**) argv);
 }
 
 /** load all parameters from the configuration file and the command line switches */
-bool Parameter::LoadParam(int argc, char* xargv[])
+bool Parameter::LoadParam(int argc, const char* xargv[])
 {
   // legacy parameter handling: all parameters are expected
   // to start with a single dash
-  char* argv[argc + 1];
+  const char* argv[argc + 1];
   for (int i = 0; i < argc; ++i) {
     argv[i] = xargv[i];
     if (strlen(argv[i]) > 2 && argv[i][0] == '-' && argv[i][1] == '-') ++argv[i];
@@ -1409,7 +1409,7 @@ bool Parameter::FilesExist(const string &paramName, int fieldNo,
 /** look for a switch in arg, update parameter */
 // TODO arg parsing like this does not belong in the library, it belongs
 // in moses-cmd
-string Parameter::FindParam(const string &paramSwitch, int argc, char* argv[])
+string Parameter::FindParam(const string &paramSwitch, int argc, const char* argv[])
 {
   for (int i = 0; i < argc; i++) {
     if (string(argv[i]) == paramSwitch) {
@@ -1431,7 +1431,7 @@ string Parameter::FindParam(const string &paramSwitch, int argc, char* argv[])
  * \param argc number of arguments on command line
  * \param argv values of paramters on command line */
 void Parameter::OverwriteParam(const string &paramSwitch,
-    const string &paramName, int argc, char* argv[])
+    const string &paramName, int argc, const char* argv[])
 {
   int startPos = -1;
   for (int i = 0; i < argc; i++) {

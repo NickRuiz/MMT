@@ -22,6 +22,11 @@
 #include "legacy/OutputCollector.h"
 #include "parameters/AllOptions.h"
 
+namespace mmt {
+class Aligner;
+class Vocabulary;
+}
+
 namespace Moses2
 {
 namespace NSCubePruning
@@ -42,6 +47,9 @@ public:
   FeatureFunctions featureFunctions;
   std::vector<const PhraseTable*> mappings;
 
+  mmt::Aligner *aligner;
+  mmt::Vocabulary *vocabulary;
+
   std::vector<size_t> maxChartSpans;
   bool isPb;
 
@@ -51,7 +59,7 @@ public:
   int cpuAffinityOffset;
   int cpuAffinityOffsetIncr;
 
-  System(const Parameter &paramsArg);
+  System(const Parameter &paramsArg, mmt::Aligner *aligner = nullptr, mmt::Vocabulary *vocabulary = nullptr);
   virtual ~System();
 
   MemPool &GetSystemPool() const;

@@ -20,8 +20,9 @@ using namespace std;
 namespace Moses2
 {
 
-System::System(const Parameter &paramsArg) :
-    params(paramsArg), featureFunctions(*this)
+System::System(const Parameter &paramsArg, mmt::Aligner *aln, mmt::Vocabulary *vocab) :
+    params(paramsArg), featureFunctions(*this),
+    aligner(aln), vocabulary(vocab)
 {
   options.init(paramsArg);
   IsPb();

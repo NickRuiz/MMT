@@ -101,7 +101,7 @@ void ThreadPool::Execute()
       // must read from task before run. otherwise task may be deleted by main thread
       // race condition
       task->DeleteAfterExecution();
-      task->Run();
+      task->RunTask();
     }
     m_threadAvailable.notify_all();
   }
@@ -144,6 +144,22 @@ void ThreadPool::Stop(bool processRemainingJobs)
   m_threadNeeded.notify_all();
 
   m_threads.join_all();
+}
+
+void Task::RunTask() {
+  this->Run();
+
+  {
+    boost::lock_guard<boost::mutex> lock(m_mutex);
+    m_done = true;
+  }
+  m_cond.notify_one();
+}
+
+void Task::Join() {
+  boost::unique_lock<boost::mutex> lock(m_mutex);
+  while (!m_done)
+    m_cond.wait(lock);
 }
 
 }

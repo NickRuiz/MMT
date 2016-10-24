@@ -50,6 +50,8 @@ namespace Moses2
 class Task
 {
 public:
+  Task() : m_done(false) {}
+
   virtual void Run() = 0;
   virtual bool DeleteAfterExecution()
   {
@@ -58,6 +60,17 @@ public:
   virtual ~Task()
   {
   }
+
+  /** run task and notify condition on completion. */
+  void RunTask();
+
+  /** wait for completion */
+  void Join();
+
+private:
+  bool m_done;
+  boost::condition_variable m_cond;
+  boost::mutex m_mutex;
 };
 
 class ThreadPool

@@ -48,5 +48,20 @@ void TranslationTask::Run()
   delete m_mgr;
 }
 
+TranslationResponse TranslationTask::GetResult(size_t nbestListSize) const
+{
+  TranslationResponse response;
+  response.session = 0;
+  response.text = m_mgr->OutputBest();
+  if(nbestListSize) {
+    // TODO create list instead of string
+    //out = m_mgr->OutputNBest();
+    // response.hypotheses.push_back(ResponseHypothesis{});
+  }
+  // response.alignment = ...; // TODO  word alignment
+  // TODO implement me
+  return response;
+}
+
 }
 

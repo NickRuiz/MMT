@@ -3,6 +3,7 @@
 #include <string>
 #include <map>
 
+#include "mmt/Translator.h"
 #include "legacy/ThreadPool.h"
 
 namespace Moses2
@@ -23,6 +24,8 @@ public:
 
   void SetContextWeights(const weightmap_t &weights) { m_contextWeights = weights; }
   const weightmap_t &GetContextWeights() const { return m_contextWeights; }
+
+  TranslationResponse GetResult(size_t nbestListSize) const;
 
 protected:
   ManagerBase *m_mgr;

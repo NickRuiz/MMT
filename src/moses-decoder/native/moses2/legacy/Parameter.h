@@ -56,9 +56,9 @@ protected:
 
   std::map<std::string, std::vector<float> > m_weights;
 
-  std::string FindParam(const std::string &paramSwitch, int argc, char* argv[]);
+  std::string FindParam(const std::string &paramSwitch, int argc, const char* argv[]);
   void OverwriteParam(const std::string &paramSwitch,
-      const std::string &paramName, int argc, char* argv[]);
+      const std::string &paramName, int argc, const char* argv[]);
   bool ReadConfigFile(const std::string &filePath);
   bool FilesExist(const std::string &paramName, int fieldNo,
       std::vector<std::string> const& fileExtension = std::vector<std::string>(
@@ -111,7 +111,7 @@ protected:
 public:
   Parameter();
   ~Parameter();
-  bool LoadParam(int argc, char* argv[]);
+  bool LoadParam(int argc, const char* argv[]);
   bool LoadParam(const std::string &filePath);
   void Explain();
 
