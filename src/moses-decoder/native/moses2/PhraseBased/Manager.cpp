@@ -78,16 +78,6 @@ void Manager::Init()
 	UTIL_THROW_IF2(unkWP == NULL, "There must be a UnknownWordPenalty FF");
 	unkWP->ProcessXML(*this, GetPool(), sentence, m_inputPaths);
 
-	// lookup with every pt
-	const std::vector<const PhraseTable*> &pts = system.mappings;
-	for (size_t i = 0; i < pts.size(); ++i) {
-		const PhraseTable &pt = *pts[i];
-		//cerr << "Looking up from " << pt.GetName() << endl;
-		pt.Lookup(*this, m_inputPaths);
-	}
-	//m_inputPaths.DeleteUnusedPaths();
-	CalcFutureScore();
-
 	m_bitmaps->Init(sentence.GetSize(), vector<bool>(0));
 
 	switch (system.options.search.algo) {
@@ -121,6 +111,16 @@ void Manager::Init()
 	}
 
 	system.featureFunctions.InitializeForInput(*this);
+
+	// lookup with every pt
+	const std::vector<const PhraseTable*> &pts = system.mappings;
+	for (size_t i = 0; i < pts.size(); ++i) {
+		const PhraseTable &pt = *pts[i];
+		//cerr << "Looking up from " << pt.GetName() << endl;
+		pt.Lookup(*this, m_inputPaths);
+	}
+	//m_inputPaths.DeleteUnusedPaths();
+	CalcFutureScore();
 }
 
 void Manager::Decode()
