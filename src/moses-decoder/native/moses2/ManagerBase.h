@@ -10,6 +10,7 @@
 #include <queue>
 #include <cstddef>
 #include <string>
+#include <vector>
 #include <deque>
 #include "Phrase.h"
 #include "MemPool.h"
@@ -17,6 +18,7 @@
 #include "EstimatedScores.h"
 #include "ArcLists.h"
 #include "legacy/Bitmaps.h"
+#include "mmt/Translator.h"
 
 namespace Moses2
 {
@@ -43,7 +45,9 @@ public:
   virtual void Decode() = 0;
   virtual std::string OutputBest() const = 0;
   virtual std::string OutputNBest() = 0;
+  virtual void OutputNBest(std::vector<ResponseHypothesis> &nbest) const = 0;
   virtual std::string OutputTransOpt() = 0;
+  virtual void OutputAlignment(std::vector<std::pair<size_t, size_t>> &alignment) const = 0;
 
   MemPool &GetPool() const
   {  return *m_pool; }

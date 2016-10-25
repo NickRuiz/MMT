@@ -71,6 +71,7 @@ public:
   std::string Debug(const System &system) const;
 
   virtual void OutputToStream(std::ostream &out) const;
+  virtual void OutputAlignment(const System &system, std::vector<std::pair<size_t, size_t>> &align) const;
 
   void EmptyHypothesisState(const InputType &input);
 

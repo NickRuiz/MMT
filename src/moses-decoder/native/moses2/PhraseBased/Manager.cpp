@@ -274,9 +274,70 @@ std::string Manager::OutputNBest()
 	return out.str();
 }
 
+void Manager::OutputNBest(std::vector<ResponseHypothesis> &nbest) const {
+  nbest.clear();
+  arcLists.Sort();
+
+  boost::unordered_set<size_t> distinctHypos;
+
+  TrellisPaths<TrellisPath> contenders;
+  m_search->AddInitialTrellisPaths(contenders);
+
+  // MAIN LOOP
+
+  size_t maxIter = system.options.nbest.nbest_size * system.options.nbest.factor;
+  size_t bestInd = 0;
+  for (size_t i = 0; i < maxIter; ++i) {
+    if (bestInd > system.options.nbest.nbest_size || contenders.empty()) {
+      break;
+    }
+
+    //cerr << "bestInd=" << bestInd << endl;
+    TrellisPath *path = contenders.Get();
+
+    bool ok = false;
+    if (system.options.nbest.only_distinct) {
+      string tgtPhrase = path->OutputTargetPhrase(system);
+      //cerr << "tgtPhrase=" << tgtPhrase << endl;
+      boost::hash<std::string> string_hash;
+      size_t hash = string_hash(tgtPhrase);
+
+      if (distinctHypos.insert(hash).second) {
+        ok = true;
+      }
+    }
+    else {
+      ok = true;
+    }
+
+    if (ok) {
+      ++bestInd;
+
+      stringstream text;
+      path->OutputToStream(text, system);
+
+      stringstream fvals;
+      path->GetScores().OutputBreakdown(fvals, system);
+
+      nbest.push_back(ResponseHypothesis{text.str(), path->GetScores().GetTotalScore(), fvals.str()});
+    }
+
+    // create next paths
+    path->CreateDeviantPaths(contenders, arcLists, GetPool(), system);
+
+    delete path;
+  }
+}
+
 std::string Manager::OutputTransOpt()
 {
 	return "";
+}
+
+void Manager::OutputAlignment(std::vector<std::pair<size_t, size_t>> &alignment) const
+{
+  alignment.clear();
+  m_search->GetBestHypo()->OutputAlignment(system, alignment);
 }
 
 }

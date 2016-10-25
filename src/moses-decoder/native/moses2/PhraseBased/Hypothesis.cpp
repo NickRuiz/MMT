@@ -168,6 +168,23 @@ void Hypothesis::OutputToStream(std::ostream &out) const
   }
 }
 
+void Hypothesis::OutputAlignment(const System &system, std::vector<std::pair<size_t, size_t>> &align) const
+{
+  if(m_prevHypo) {
+    m_prevHypo->OutputAlignment(system, align);
+  }
+
+  WordAlignmentSort waso = system.options.output.WA_SortOrder;
+  auto alignments = GetTargetPhrase().GetAlignTerm().GetSortedAlignments(waso);
+
+  for(auto p : alignments) {
+    align.push_back(make_pair(
+        m_path->range.GetStartPos() + p->first,
+        m_currTargetWordsRange.GetStartPos() + p->second
+    ));
+  }
+}
+
 void Hypothesis::EmptyHypothesisState(const InputType &input)
 {
   const std::vector<const StatefulFeatureFunction*> &sfffs =

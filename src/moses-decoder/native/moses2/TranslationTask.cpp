@@ -53,13 +53,9 @@ TranslationResponse TranslationTask::GetResult(size_t nbestListSize) const
   TranslationResponse response;
   response.session = 0;
   response.text = m_mgr->OutputBest();
-  if(nbestListSize) {
-    // TODO create list instead of string
-    //out = m_mgr->OutputNBest();
-    // response.hypotheses.push_back(ResponseHypothesis{});
-  }
-  // response.alignment = ...; // TODO  word alignment
-  // TODO implement me
+  if(nbestListSize)
+    m_mgr->OutputNBest(response.hypotheses);
+  m_mgr->OutputAlignment(response.alignment);
   return response;
 }
 

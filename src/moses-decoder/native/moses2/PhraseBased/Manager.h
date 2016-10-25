@@ -56,7 +56,9 @@ public:
   void Decode();
   std::string OutputBest() const;
   std::string OutputNBest();
+  virtual void OutputNBest(std::vector<ResponseHypothesis> &nbest) const override;
   std::string OutputTransOpt();
+  virtual void OutputAlignment(std::vector<std::pair<size_t, size_t>> &alignment) const override;
 
 protected:
 

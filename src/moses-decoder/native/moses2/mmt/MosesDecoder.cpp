@@ -2,6 +2,10 @@
 // Created by Davide  Caroselli on 03/12/15.
 //
 
+#include <map>
+#include <thread>
+#include <mutex>
+
 #include "TranslationTask.h"
 #include "legacy/ThreadPool.h"
 #include "MosesDecoder.h"
@@ -17,13 +21,17 @@ using namespace mmt::decoder;
 
 namespace mmt {
     namespace decoder {
-
         class MosesDecoderImpl : public MosesDecoder {
             //MosesServer::JNITranslator m_translator;
             std::vector<feature_t> m_features;
             std::vector<IncrementalModel *> m_incrementalModels;
             Moses2::System &m_system;
             Moses2::ThreadPool m_pool;
+
+            std::map<uint64_t, std::map<std::string, float>> m_sessionContext;
+            std::mutex m_sessionsMut;
+            static constexpr size_t kGlobalSession = 0; // empty-context default session
+            size_t m_isession = 1;
 
         public:
 
@@ -110,6 +118,8 @@ MosesDecoderImpl::MosesDecoderImpl(Moses2::System &system) :
             m_incrementalModels.push_back(model);
     }
      */
+
+    m_sessionContext[kGlobalSession] = std::map<std::string, float>();
 }
 
 std::vector<feature_t> MosesDecoderImpl::getFeatures() {
@@ -142,50 +152,25 @@ void MosesDecoderImpl::setDefaultFeatureWeights(const std::map<std::string, std:
 
 int64_t MosesDecoderImpl::openSession(const std::map<std::string, float> &translationContext,
                                       const std::map<std::string, std::vector<float>> *featureWeights) {
-    //return m_translator.create_session(translationContext, featureWeights);
-    return 0;
+
+    // note: feature weights are now ignored. use setDefaultFeatureWeights() instead.
+    // TODO: add docs, assert featureWeights==nullptr or remove it entirely
+
+    std::lock_guard<std::mutex> lock(m_sessionsMut);
+    uint64_t session = m_isession++;
+    m_sessionContext[session] = translationContext;
+    return session;
 }
 
 void MosesDecoderImpl::closeSession(uint64_t session) {
-    //m_translator.delete_session(session);
+    std::lock_guard<std::mutex> lock(m_sessionsMut);
+    if(session != kGlobalSession)
+        m_sessionContext.erase(session);
 }
 
 translation_t MosesDecoderImpl::translate(const std::string &text, uint64_t session,
                                           const std::map<std::string, float> *translationContext,
                                           size_t nbestListSize) {
-    // MosesServer interface request...
-
-    /*
-    MosesServer::TranslationRequest request;
-    MosesServer::TranslationResponse response;
-
-    request.sourceSent = text;
-    request.nBestListSize = nbestListSize;
-    request.sessionId = session;
-    if (translationContext != nullptr) {
-        assert(session == 0); // setting contextWeights only has an effect if we are not within a session
-        request.contextWeights = *translationContext;
-    }
-
-    m_translator.execute(request, &response);
-
-    // MosesDecoder JNI interface response.
-
-    // (this split should have allowed us to keep the libjnimoses separate...
-    // But the libmoses interface has never really been a stable, separated API anyways
-    // [e.g. StaticData leaking into everything],
-    // and so libjnimoses always has to be compiled afresh together with moses).
-
-    translation_t translation;
-
-    translation.text = response.text;
-    for (auto h: response.hypotheses)
-        translation.hypotheses.push_back(hypothesis_t{h.text, h.score, h.fvals});
-    translation.session = response.session;
-    translation.alignment = response.alignment;
-
-    return translation;
-     */
 
     boost::shared_ptr<Moses2::TranslationTask> task(new Moses2::TranslationTask(m_system, text, 0));
     if(translationContext)
@@ -235,3 +220,5 @@ std::vector<updateid_t> MosesDecoderImpl::GetLatestUpdatesIdentifier() {
 
     return ret;
 }
+
+constexpr size_t MosesDecoderImpl::kGlobalSession;
