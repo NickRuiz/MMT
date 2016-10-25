@@ -4,7 +4,7 @@
 
 #include <map>
 #include <thread>
-#include <mutex>
+#include <boost/thread/shared_mutex.hpp>
 
 #include "TranslationTask.h"
 #include "legacy/ThreadPool.h"
@@ -29,7 +29,7 @@ namespace mmt {
             Moses2::ThreadPool m_pool;
 
             std::map<uint64_t, std::map<std::string, float>> m_sessionContext;
-            std::mutex m_sessionsMut;
+            boost::shared_mutex m_sessionsMut;
             static constexpr size_t kGlobalSession = 0; // empty-context default session
             size_t m_isession = 1;
 
@@ -69,13 +69,8 @@ MosesDecoder *MosesDecoder::createInstance(const char *inifile, Aligner *aligner
     if (!params.LoadParam(2, argv))
         return NULL;
 
-    // initialize all "global" variables, which are stored in StaticData
+    // initialize all "global" variables, which are stored in System
     // note: this also loads models such as the language model, etc.
-    /*
-    if (!Moses::StaticData::LoadDataStatic(&params, "moses", aligner, vocabulary))
-        return NULL;
-        */
-    // TODO: aligner, vocabulary
 
     Moses2::System system(params, aligner, vocabulary);
 
@@ -156,14 +151,14 @@ int64_t MosesDecoderImpl::openSession(const std::map<std::string, float> &transl
     // note: feature weights are now ignored. use setDefaultFeatureWeights() instead.
     // TODO: add docs, assert featureWeights==nullptr or remove it entirely
 
-    std::lock_guard<std::mutex> lock(m_sessionsMut);
+    boost::unique_lock<boost::shared_mutex> lock(m_sessionsMut);
     uint64_t session = m_isession++;
     m_sessionContext[session] = translationContext;
     return session;
 }
 
 void MosesDecoderImpl::closeSession(uint64_t session) {
-    std::lock_guard<std::mutex> lock(m_sessionsMut);
+    boost::unique_lock<boost::shared_mutex> lock(m_sessionsMut);
     if(session != kGlobalSession)
         m_sessionContext.erase(session);
 }
@@ -171,6 +166,13 @@ void MosesDecoderImpl::closeSession(uint64_t session) {
 translation_t MosesDecoderImpl::translate(const std::string &text, uint64_t session,
                                           const std::map<std::string, float> *translationContext,
                                           size_t nbestListSize) {
+
+    std::map<std::string, float> sessionContext;
+    if(!translationContext) {
+        boost::shared_lock<boost::shared_mutex> lock(m_sessionsMut);
+        sessionContext = m_sessionContext[session];
+        translationContext = &sessionContext;
+    }
 
     boost::shared_ptr<Moses2::TranslationTask> task(new Moses2::TranslationTask(m_system, text, 0));
     if(translationContext)
