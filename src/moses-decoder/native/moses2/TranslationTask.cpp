@@ -19,6 +19,7 @@ TranslationTask::TranslationTask(System &system,
   else {
 	  m_mgr = new SCFG::Manager(system, *this, line, translationId);
   }
+  m_featureWeights = system.GetWeights();
 }
 
 TranslationTask::~TranslationTask()
@@ -46,6 +47,11 @@ void TranslationTask::Run()
   }
 
   delete m_mgr;
+}
+
+void TranslationTask::SetWeights(const std::map<std::string, std::vector<float>> &featureWeights)
+{
+  m_featureWeights.SetWeights(m_mgr->system.featureFunctions, featureWeights);
 }
 
 TranslationResponse TranslationTask::GetResult(size_t nbestListSize) const

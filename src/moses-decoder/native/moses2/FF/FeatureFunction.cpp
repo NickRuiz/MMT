@@ -11,6 +11,7 @@
 #include "../System.h"
 #include "../legacy/Util2.h"
 #include "util/exception.hh"
+#include "TranslationTask.h"
 
 using namespace std;
 
@@ -67,7 +68,7 @@ void FeatureFunction::InitializeForInput(const Manager &mgr) const {
 }
 
 void FeatureFunction::InitializeForInput(const Manager &mgr) {
-  m_weights.reset(new std::vector<SCORE>(mgr.system.GetWeights().GetWeights(*this)));
+  m_weights.reset(new std::vector<SCORE>(mgr.task.GetWeights().GetWeights(*this)));
 }
 
 void FeatureFunction::ReadParameters()

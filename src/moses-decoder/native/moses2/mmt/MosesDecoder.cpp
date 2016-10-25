@@ -9,12 +9,11 @@
 #include "TranslationTask.h"
 #include "legacy/ThreadPool.h"
 #include "MosesDecoder.h"
-//#include "JNITranslator.h"
 #include "Translator.h"
 #include "legacy/Parameter.h"
 #include "System.h"
-//#include <moses/StaticData.h>
-//#include <moses/FF/StatefulFeatureFunction.h>
+#include "FF/FeatureFunction.h"
+#include "Weights.h"
 
 using namespace mmt;
 using namespace mmt::decoder;
@@ -32,6 +31,10 @@ namespace mmt {
             boost::shared_mutex m_sessionsMut;
             static constexpr size_t kGlobalSession = 0; // empty-context default session
             size_t m_isession = 1;
+
+            std::map<std::string, std::vector<float>> m_featureWeights;
+            Moses2::Weights m_weights;
+            boost::shared_mutex m_featureWeightsMut;
 
         public:
 
@@ -114,6 +117,7 @@ MosesDecoderImpl::MosesDecoderImpl(Moses2::System &system) :
     }
      */
 
+    m_weights = system.GetWeights();
     m_sessionContext[kGlobalSession] = std::map<std::string, float>();
 }
 
@@ -122,27 +126,28 @@ std::vector<feature_t> MosesDecoderImpl::getFeatures() {
 }
 
 std::vector<float> MosesDecoderImpl::getFeatureWeights(feature_t &_feature) {
-    /*
-    Moses::FeatureFunction *feature = (Moses::FeatureFunction *) _feature.ptr;
-    std::vector<float> weights;
+    boost::shared_lock<boost::shared_mutex> lock(m_featureWeightsMut);
+
+    Moses2::FeatureFunction *feature = (Moses2::FeatureFunction *) _feature.ptr;
+    std::vector<Moses2::SCORE> weights;
 
     if (feature->IsTuneable()) {
-        weights = Moses::StaticData::Instance().GetAllWeightsNew().GetScoresForProducer(feature);
+        weights = m_weights.GetWeights(*feature);
 
-        for (size_t i = 0; i < feature->GetNumScoreComponents(); ++i) {
-            if (!feature->IsTuneableComponent(i)) {
+        for (size_t i = 0; i < feature->GetNumScores(); ++i) {
+            if (!feature->IsTuneable()) {
                 weights[i] = UNTUNEABLE_COMPONENT;
             }
         }
     }
 
     return weights;
-     */
-    return std::vector<float>();
 }
 
 void MosesDecoderImpl::setDefaultFeatureWeights(const std::map<std::string, std::vector<float>> &featureWeights) {
-    //m_translator.set_default_feature_weights(featureWeights);
+    boost::unique_lock<boost::shared_mutex> lock(m_featureWeightsMut);
+    m_featureWeights = featureWeights;
+    m_weights.SetWeights(m_system.featureFunctions, featureWeights);
 }
 
 int64_t MosesDecoderImpl::openSession(const std::map<std::string, float> &translationContext,
@@ -174,9 +179,16 @@ translation_t MosesDecoderImpl::translate(const std::string &text, uint64_t sess
         translationContext = &sessionContext;
     }
 
+    Moses2::Weights weights;
+    {
+        boost::shared_lock<boost::shared_mutex> lock(m_featureWeightsMut);
+        weights = m_weights;
+    }
+
     boost::shared_ptr<Moses2::TranslationTask> task(new Moses2::TranslationTask(m_system, text, 0));
     if(translationContext)
         task->SetContextWeights(*translationContext);
+    task->SetWeights(weights);
     m_pool.Submit(task);
     task->Join();
 

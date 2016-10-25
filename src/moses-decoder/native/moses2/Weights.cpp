@@ -20,13 +20,10 @@ namespace Moses2
 
 Weights::Weights()
 {
-  // TODO Auto-generated constructor stub
-
 }
 
 Weights::~Weights()
 {
-  // TODO Auto-generated destructor stub
 }
 
 void Weights::Init(const FeatureFunctions &ffs)
@@ -65,6 +62,12 @@ void Weights::SetWeights(const FeatureFunctions &ffs, const std::string &ffName,
 	SCORE weight = weights[i];
 	m_weights[startInd + i] = weight;
   }
+}
+
+void Weights::SetWeights(const FeatureFunctions &ffs, const std::map<std::string, std::vector<float>> &featureWeights)
+{
+  for(auto w : featureWeights)
+    SetWeights(ffs, w.first, w.second);
 }
 
 }

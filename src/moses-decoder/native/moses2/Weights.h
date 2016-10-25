@@ -8,11 +8,14 @@
 
 #include <iostream>
 #include <vector>
+#include <map>
 #include "TypeDef.h"
 
 namespace Moses2
 {
 
+class System;
+class FeatureFunction;
 class FeatureFunctions;
 
 class Weights
@@ -32,6 +35,8 @@ public:
   std::vector<SCORE> GetWeights(const FeatureFunction &ff) const;
 
   void SetWeights(const FeatureFunctions &ffs, const std::string &ffName, const std::vector<float> &weights);
+
+  void SetWeights(const FeatureFunctions &ffs, const std::map<std::string, std::vector<float>> &featureWeights);
 
 protected:
   std::vector<SCORE> m_weights;
