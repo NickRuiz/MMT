@@ -13,6 +13,7 @@
 #include "legacy/Parameter.h"
 #include "System.h"
 #include "FF/FeatureFunction.h"
+#include "FF/StatefulFeatureFunction.h"
 #include "Weights.h"
 
 using namespace mmt;
@@ -82,13 +83,12 @@ MosesDecoderImpl::MosesDecoderImpl(Moses2::Parameter params, Aligner *aligner, V
     m_features(), m_system(params, aligner, vocabulary),
     m_pool(m_system.options.server.numThreads, m_system.cpuAffinityOffset, m_system.cpuAffinityOffsetIncr)
 {
-    /*
-    const std::vector<const Moses::StatelessFeatureFunction *> &slf = Moses::StatelessFeatureFunction::GetStatelessFeatureFunctions();
-    for (size_t i = 0; i < slf.size(); ++i) {
-        const Moses::FeatureFunction *feature = slf[i];
+    const std::vector<const Moses2::FeatureFunction *> &ffs = m_system.featureFunctions.GetFeatureFunctions();
+    for (size_t i = 0; i < ffs.size(); ++i) {
+        const Moses2::FeatureFunction *feature = ffs[i];
         feature_t f;
-        f.name = feature->GetScoreProducerDescription();
-        f.stateless = feature->IsStateless();
+        f.name = feature->GetName();
+        f.stateless = dynamic_cast<const Moses2::StatefulFeatureFunction *>(feature) != nullptr;
         f.tunable = feature->IsTuneable();
         f.ptr = (void *) feature;
 
@@ -98,24 +98,7 @@ MosesDecoderImpl::MosesDecoderImpl(Moses2::Parameter params, Aligner *aligner, V
             m_incrementalModels.push_back(model);
     }
 
-    const std::vector<const Moses::StatefulFeatureFunction *> &sff = Moses::StatefulFeatureFunction::GetStatefulFeatureFunctions();
-    for (size_t i = 0; i < sff.size(); ++i) {
-        const Moses::FeatureFunction *feature = sff[i];
-
-        feature_t f;
-        f.name = feature->GetScoreProducerDescription();
-        f.stateless = feature->IsStateless();
-        f.tunable = feature->IsTuneable();
-        f.ptr = (void *) feature;
-
-        m_features.push_back(f);
-        mmt::IncrementalModel *model = feature->GetIncrementalModel();
-        if (model)
-            m_incrementalModels.push_back(model);
-    }
-     */
-
-    m_weights = system.GetWeights();
+    m_weights = m_system.GetWeights();
     m_sessionContext[kGlobalSession] = std::map<std::string, float>();
 }
 
