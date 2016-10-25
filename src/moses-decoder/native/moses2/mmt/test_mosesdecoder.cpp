@@ -42,9 +42,9 @@ int main(int argc, const char *argv[]) {
   // but we have no Vocabulary.
 
   std::map<std::string, float> ibm;;
-  ibm["ibm"] = 1.f;
+  ibm["2"] = 1.f;
   std::map<std::string, float> europarl;
-  europarl["europarl"] = 1.f;
+  europarl["1"] = 1.f;
 
   translation = decoder->translate(text, 0, NULL, 0);
   std::cout << "Translation: " << translation.text << "\n";
