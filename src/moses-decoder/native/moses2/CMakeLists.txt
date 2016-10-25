@@ -390,7 +390,6 @@ set(SOURCE_FILES
     InputPathsBase.h
     InputType.cpp
     InputType.h
-    Main.cpp
     Main.h
     ManagerBase.cpp
     ManagerBase.h
@@ -425,7 +424,7 @@ set(SOURCE_FILES
     Word.cpp
     Word.h mmt/Translator.h)
 
-add_executable(moses2 ${SOURCE_FILES})
+add_executable(moses2 ${SOURCE_FILES} Main.cpp)
 target_link_libraries(moses2 pthread)
 #target_link_libraries(moses2 ${XMLRPC_LIBRARIES})
 target_link_libraries(moses2 ${Boost_LIBRARIES})
@@ -439,3 +438,16 @@ endif (USE_MMTILM)
 if (USE_SAPT)
     target_link_libraries(moses2 ${SAPT_LIBRARIES})
 endif (USE_SAPT)
+
+
+
+add_executable(test-moses2 ${SOURCE_FILES} mmt/test_mosesdecoder.cpp)
+target_link_libraries(test-moses2 pthread)
+#target_link_libraries(test-moses2 ${XMLRPC_LIBRARIES})
+target_link_libraries(test-moses2 ${Boost_LIBRARIES})
+target_link_libraries(test-moses2 ${ZLIB_LIBRARIES})
+
+target_link_libraries(test-moses2 ${ROCKSDB_LIBRARIES})
+target_link_libraries(test-moses2 ${MMTILM_LIBRARIES})
+
+target_link_libraries(test-moses2 ${SAPT_LIBRARIES})
