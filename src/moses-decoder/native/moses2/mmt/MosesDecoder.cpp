@@ -24,7 +24,7 @@ namespace mmt {
             //MosesServer::JNITranslator m_translator;
             std::vector<feature_t> m_features;
             std::vector<IncrementalModel *> m_incrementalModels;
-            Moses2::System &m_system;
+            Moses2::System m_system;
             Moses2::ThreadPool m_pool;
 
             std::map<uint64_t, std::map<std::string, float>> m_sessionContext;
@@ -38,7 +38,7 @@ namespace mmt {
 
         public:
 
-            MosesDecoderImpl(Moses2::System &system);
+            MosesDecoderImpl(Moses2::Parameter params, Aligner *aligner, Vocabulary *vocabulary);
 
             virtual std::vector<feature_t> getFeatures() override;
 
@@ -75,14 +75,12 @@ MosesDecoder *MosesDecoder::createInstance(const char *inifile, Aligner *aligner
     // initialize all "global" variables, which are stored in System
     // note: this also loads models such as the language model, etc.
 
-    Moses2::System system(params, aligner, vocabulary);
-
-    return new MosesDecoderImpl(system);
+    return new MosesDecoderImpl(params, aligner, vocabulary);
 }
 
-MosesDecoderImpl::MosesDecoderImpl(Moses2::System &system) :
-    m_features(), m_system(system),
-    m_pool(system.options.server.numThreads, system.cpuAffinityOffset, system.cpuAffinityOffsetIncr)
+MosesDecoderImpl::MosesDecoderImpl(Moses2::Parameter params, Aligner *aligner, Vocabulary *vocabulary) :
+    m_features(), m_system(params, aligner, vocabulary),
+    m_pool(m_system.options.server.numThreads, m_system.cpuAffinityOffset, m_system.cpuAffinityOffsetIncr)
 {
     /*
     const std::vector<const Moses::StatelessFeatureFunction *> &slf = Moses::StatelessFeatureFunction::GetStatelessFeatureFunctions();
