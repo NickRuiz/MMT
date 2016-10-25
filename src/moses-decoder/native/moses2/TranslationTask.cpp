@@ -14,10 +14,10 @@ TranslationTask::TranslationTask(System &system,
 		long translationId)
 {
   if (system.isPb) {
-	  m_mgr = new Manager(system, *this, line, translationId);
+	  m_mgr.reset(new Manager(system, *this, line, translationId));
   }
   else {
-	  m_mgr = new SCFG::Manager(system, *this, line, translationId);
+	  m_mgr.reset(new SCFG::Manager(system, *this, line, translationId));
   }
   m_featureWeights = system.GetWeights();
 }
@@ -45,8 +45,6 @@ void TranslationTask::Run()
     out = m_mgr->OutputTransOpt();
     m_mgr->system.detailedTranslationCollector->Write(m_mgr->GetTranslationId(), out);
   }
-
-  delete m_mgr;
 }
 
 void TranslationTask::SetWeights(const std::map<std::string, std::vector<float>> &featureWeights)

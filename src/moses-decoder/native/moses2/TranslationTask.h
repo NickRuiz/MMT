@@ -2,6 +2,7 @@
 
 #include <string>
 #include <map>
+#include <memory>
 
 #include "mmt/Translator.h"
 #include "legacy/ThreadPool.h"
@@ -33,7 +34,7 @@ public:
   TranslationResponse GetResult(size_t nbestListSize) const;
 
 protected:
-  ManagerBase *m_mgr;
+  std::unique_ptr<ManagerBase> m_mgr;
   weightmap_t m_contextWeights;
   Weights m_featureWeights;
 };

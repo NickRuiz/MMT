@@ -34,8 +34,12 @@ int main(int argc, const char *argv[]) {
   std::cout << "\n";
 
   // Translation
-  std::string text = "world system information support";
+  //std::string text = "system information support";
+  std::string text = "1092 10121 10010 1049 1006";
   translation_t translation;
+
+  //Vocabulary::Lookup(const vector<vector<string>> &buffer, vector<vector<wid_t>> *output, bool putIfAbsent)
+  // but we have no Vocabulary.
 
   std::map<std::string, float> ibm;;
   ibm["ibm"] = 1.f;
