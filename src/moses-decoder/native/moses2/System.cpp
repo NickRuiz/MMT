@@ -35,7 +35,7 @@ System::System(const Parameter &paramsArg, mmt::Aligner *aln, mmt::Vocabulary *v
   const PARAM_VEC *section;
 
   // output collectors
-  if (options.nbest.nbest_size) {
+  if (options.nbest.nbest_size && options.nbest.output_file_path.size()) {
     nbestCollector.reset(new OutputCollector(options.nbest.output_file_path));
   }
 

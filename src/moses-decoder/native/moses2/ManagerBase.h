@@ -45,7 +45,7 @@ public:
   virtual void Decode() = 0;
   virtual std::string OutputBest() const = 0;
   virtual std::string OutputNBest() = 0;
-  virtual void OutputNBest(std::vector<ResponseHypothesis> &nbest) const = 0;
+  virtual void OutputNBest(size_t nbest_size, std::vector<ResponseHypothesis> &nbest) const = 0;
   virtual std::string OutputTransOpt() = 0;
   virtual void OutputAlignment(std::vector<std::pair<size_t, size_t>> &alignment) const = 0;
 

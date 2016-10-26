@@ -35,7 +35,7 @@ public:
   void Decode();
   std::string OutputBest() const;
   std::string OutputNBest();
-  virtual void OutputNBest(std::vector<ResponseHypothesis> &nbest) const override { throw std::runtime_error("not implemented"); }
+  virtual void OutputNBest(size_t nbest_size, std::vector<ResponseHypothesis> &nbest) const override { throw std::runtime_error("not implemented"); }
   std::string OutputTransOpt();
   virtual void OutputAlignment(std::vector<std::pair<size_t, size_t>> &alignment) const override { throw std::runtime_error("not implemented"); }
 

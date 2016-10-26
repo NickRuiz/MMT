@@ -36,7 +36,7 @@ void TranslationTask::Run()
   out = m_mgr->OutputBest() + "\n";
   m_mgr->system.bestCollector->Write(m_mgr->GetTranslationId(), out);
 
-  if (m_mgr->system.options.nbest.nbest_size) {
+  if (m_mgr->system.options.nbest.nbest_size && m_mgr->system.nbestCollector) {
     out = m_mgr->OutputNBest();
     m_mgr->system.nbestCollector->Write(m_mgr->GetTranslationId(), out);
   }
@@ -57,8 +57,13 @@ TranslationResponse TranslationTask::GetResult(size_t nbestListSize) const
   TranslationResponse response;
   response.session = 0;
   response.text = m_mgr->OutputBest();
-  if(nbestListSize)
-    m_mgr->OutputNBest(response.hypotheses);
+  if(nbestListSize) {
+    if(!m_mgr->system.options.nbest.nbest_size)
+      // otherwise, we fail with an empty ManagerBase::arcLists?! error looks like: "looking for:0xa39da20 have 0" terminate called after throwing an instance of 'util::Exception'
+      // class Scores only adds scores if nbest_size != 0.
+      throw new std::runtime_error("system.options.nbest.nbest_size must not be 0 when requesting an n-best list");
+    m_mgr->OutputNBest(nbestListSize, response.hypotheses);
+  }
   m_mgr->OutputAlignment(response.alignment);
   return response;
 }

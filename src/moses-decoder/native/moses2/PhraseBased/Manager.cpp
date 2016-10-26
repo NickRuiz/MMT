@@ -236,7 +236,7 @@ std::string Manager::OutputNBest()
 	size_t maxIter = system.options.nbest.nbest_size * system.options.nbest.factor;
 	size_t bestInd = 0;
 	for (size_t i = 0; i < maxIter; ++i) {
-		if (bestInd > system.options.nbest.nbest_size || contenders.empty()) {
+		if (bestInd >= system.options.nbest.nbest_size || contenders.empty()) {
 			break;
 		}
 
@@ -274,7 +274,7 @@ std::string Manager::OutputNBest()
 	return out.str();
 }
 
-void Manager::OutputNBest(std::vector<ResponseHypothesis> &nbest) const {
+void Manager::OutputNBest(size_t nbest_size, std::vector<ResponseHypothesis> &nbest) const {
   nbest.clear();
   arcLists.Sort();
 
@@ -285,10 +285,10 @@ void Manager::OutputNBest(std::vector<ResponseHypothesis> &nbest) const {
 
   // MAIN LOOP
 
-  size_t maxIter = system.options.nbest.nbest_size * system.options.nbest.factor;
+  size_t maxIter = nbest_size * system.options.nbest.factor;
   size_t bestInd = 0;
   for (size_t i = 0; i < maxIter; ++i) {
-    if (bestInd > system.options.nbest.nbest_size || contenders.empty()) {
+    if (bestInd >= nbest_size || contenders.empty()) {
       break;
     }
 

@@ -83,6 +83,7 @@ MosesDecoderImpl::MosesDecoderImpl(Moses2::Parameter params, Aligner *aligner, V
     m_features(), m_system(params, aligner, vocabulary),
     m_pool(m_system.options.server.numThreads, m_system.cpuAffinityOffset, m_system.cpuAffinityOffsetIncr)
 {
+    m_system.options.nbest.nbest_size = 1; // must be non-zero so Scores collects individual scores, and we can get n-best lists
     const std::vector<const Moses2::FeatureFunction *> &ffs = m_system.featureFunctions.GetFeatureFunctions();
     for (size_t i = 0; i < ffs.size(); ++i) {
         const Moses2::FeatureFunction *feature = ffs[i];
