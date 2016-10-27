@@ -33,11 +33,23 @@ void batch_run(MosesDecoder *decoder) {
   translations.resize(lines.size());
   thread threads[lines.size()];
 
-  for(size_t i = 0; i < lines.size(); i++)
+  size_t i = 0;
+  size_t nthreads = 8;
+  for(i = 0; i < nthreads && i < lines.size(); i++) {
     threads[i] = thread(&run, decoder, &lines[i], &translations[i]);
+    //threads[i].join();
+    //cout << translations[i] << endl;
+  }
 
-  for(size_t i = 0; i < lines.size(); i++)
-    threads[i].join();
+  size_t j = 0;
+  for(; j < lines.size(); j++) {
+    threads[j].join();
+    cout << translations[j] << endl;
+    if(i < lines.size()) {
+      threads[i] = thread(&run, decoder, &lines[i], &translations[i]);
+      i++;
+    }
+  }
 }
 
 int main(int argc, const char *argv[]) {
