@@ -4,13 +4,44 @@
 
 #include <stdio.h>
 #include <iostream>
+#include <thread>
 
 #include "mmt/MosesDecoder.h"
 
 using namespace mmt::decoder;
 
+int run(MosesDecoder *decoder, const std::string *source, std::string *target) {
+  using namespace std;
+
+  translation_t translation;
+  translation = decoder->translate(*source, 0, NULL, 0);
+  *target = translation.text;
+
+  return 0;
+}
+
+void batch_run(MosesDecoder *decoder) {
+  using namespace std;
+  vector<string> lines;
+  string line;
+
+  while(getline(cin, line)) {
+    lines.push_back(line);
+  }
+
+  vector<string> translations;
+  translations.resize(lines.size());
+  thread threads[lines.size()];
+
+  for(size_t i = 0; i < lines.size(); i++)
+    threads[i] = thread(&run, decoder, &lines[i], &translations[i]);
+
+  for(size_t i = 0; i < lines.size(); i++)
+    threads[i].join();
+}
+
 int main(int argc, const char *argv[]) {
-  if (argc != 2) {
+  if (argc < 2) {
     printf("USAGE: jnitest MOSES_INI\n");
     return 1;
   }
@@ -32,6 +63,11 @@ int main(int argc, const char *argv[]) {
     std::cout << "\n";
   }
   std::cout << "\n";
+
+  if(argc == 3) {
+    batch_run(decoder);
+    return 0;
+  }
 
   // Translation
   //std::string text = "system information support";
