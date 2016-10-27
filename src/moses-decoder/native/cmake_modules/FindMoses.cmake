@@ -12,10 +12,10 @@
 # or, we can use PROJECT_SOURCE_DIR which should always point to <MMT>/test/Moses/native
 #   for the Decoder project.
 #
-find_path(Moses_INCLUDE_DIRS moses/FF/StatefulFeatureFunction.h
-          HINTS "${PROJECT_SOURCE_DIR}/../../../vendor/moses/")
+find_path(Moses_INCLUDE_DIRS FF/FeatureFunction.h
+          HINTS "${PROJECT_SOURCE_DIR}/../native/moses2/")
 
-find_library(Moses_LIBRARIES NAMES moses libmoses
+find_library(Moses_LIBRARIES NAMES moses2 libmoses2
              HINTS "${PROJECT_SOURCE_DIR}/../../../build/lib/")
 
 if (Moses_LIBRARIES STREQUAL "Moses_LIBRARIES-NOTFOUND")

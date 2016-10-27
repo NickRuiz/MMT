@@ -3,6 +3,10 @@ project(moses2)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/")
 
+set(CMAKE_MACOSX_RPATH 1)
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_INSTALL_PREFIX}/bin)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_INSTALL_PREFIX}/lib)
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 # Moses definitions
@@ -424,7 +428,8 @@ set(SOURCE_FILES
     Word.cpp
     Word.h mmt/Translator.h)
 
-add_executable(moses2 ${SOURCE_FILES} Main.cpp)
+#add_executable(moses2 ${SOURCE_FILES} Main.cpp)
+add_library(moses2 SHARED ${SOURCE_FILES})
 target_link_libraries(moses2 pthread)
 #target_link_libraries(moses2 ${XMLRPC_LIBRARIES})
 target_link_libraries(moses2 ${Boost_LIBRARIES})

@@ -7,10 +7,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake_modules")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 set(SOURCE_FILES
-        decoder/JNITranslationRequest.h decoder/JNITranslationRequest.cpp
-        decoder/JNITranslator.h decoder/JNITranslator.cpp
-        decoder/MosesDecoder.h decoder/MosesDecoder.cpp
-
         javah/eu_modernmt_decoder_moses_MosesDecoder.h java/eu_modernmt_decoder_moses_MosesDecoder.cpp
         java/JMosesFeature.h java/JMosesFeature.cpp
         java/JTranslation.h java/JTranslation.cpp)
