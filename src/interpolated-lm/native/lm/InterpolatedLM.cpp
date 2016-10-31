@@ -67,7 +67,6 @@ namespace mmt {
                     return max(alm_key->length(), slm_key->length());
             }
         };
-
     }
 }
 
@@ -136,9 +135,24 @@ HistoryKey *InterpolatedLM::MakeHistoryKey(const vector<wid_t> &phrase) const {
                                  self->slm ? self->slm->MakeHistoryKey(phrase) : NULL);
 }
 
-HistoryKey *InterpolatedLM::MakeEmptyHistoryKey() const {
-    return new ILMHistoryKey(self->alm ? self->alm->MakeEmptyHistoryKey() : NULL,
+HistoryKey *InterpolatedLM::MakeEmptyHistoryKey(HistoryKey *memory) const {
+    if(!memory) {
+        return new ILMHistoryKey(self->alm ? self->alm->MakeEmptyHistoryKey() : NULL,
                                  self->slm ? self->slm->MakeEmptyHistoryKey() : NULL);
+    }
+
+    char *ilmMem = (char *) memory;
+    char *almMem = ilmMem + sizeof(ILMHistoryKey);
+    char *slmMem = almMem + (self->alm ? self->alm->GetHistoryKeySize() : 0);
+
+    return new ((ILMHistoryKey *) ilmMem) ILMHistoryKey(self->alm ? self->alm->MakeEmptyHistoryKey((HistoryKey *) almMem) : NULL,
+                                      self->slm ? self->slm->MakeEmptyHistoryKey((HistoryKey *) slmMem) : NULL);
+}
+
+size_t InterpolatedLM::GetHistoryKeySize() const {
+  return sizeof(ILMHistoryKey)
+         + (self->alm ? self->alm->GetHistoryKeySize() : 0)
+         + (self->slm ? self->slm->GetHistoryKeySize() : 0);
 }
 
 bool InterpolatedLM::IsOOV(const context_t *context, const wid_t word) const {

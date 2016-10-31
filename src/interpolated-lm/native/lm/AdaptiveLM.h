@@ -38,7 +38,9 @@ namespace mmt {
 
             virtual HistoryKey *MakeHistoryKey(const vector <wid_t> &phrase) const override;
 
-            virtual HistoryKey *MakeEmptyHistoryKey() const override;
+            virtual HistoryKey *MakeEmptyHistoryKey(HistoryKey *memory = nullptr) const override;
+
+            virtual size_t GetHistoryKeySize() const override;
 
             virtual bool IsOOV(const context_t *context, const wid_t word) const override;
 

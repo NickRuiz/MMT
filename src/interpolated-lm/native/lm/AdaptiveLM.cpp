@@ -199,14 +199,20 @@ cachevalue_t AdaptiveLM::ComputeUnigramProbability(const context_t *context, dbk
     return result;
 }
 
-HistoryKey *AdaptiveLM::MakeEmptyHistoryKey() const {
-    return new AdaptiveLMHistoryKey();
+HistoryKey *AdaptiveLM::MakeEmptyHistoryKey(HistoryKey *memory) const {
+    if(memory)
+        return new ((AdaptiveLMHistoryKey *) memory) AdaptiveLMHistoryKey();
+    else
+        return new AdaptiveLMHistoryKey();
 }
 
 HistoryKey *AdaptiveLM::MakeHistoryKey(const vector<wid_t> &phrase) const {
     return new AdaptiveLMHistoryKey(phrase, order);
 }
 
+size_t AdaptiveLM::GetHistoryKeySize() const {
+  return sizeof(AdaptiveLMHistoryKey);
+}
 
 inline count_t AdaptiveLM::OOVClassFrequency(const count_t dictionarySize) const {
     return dictionarySize;

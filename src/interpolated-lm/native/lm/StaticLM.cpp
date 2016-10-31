@@ -63,8 +63,15 @@ HistoryKey *StaticLM::MakeHistoryKey(const vector<wid_t> &phrase) const {
     return new KenLMHistoryKey(state0);
 }
 
-HistoryKey *StaticLM::MakeEmptyHistoryKey() const {
-    return new KenLMHistoryKey(model->NullContextState());
+HistoryKey *StaticLM::MakeEmptyHistoryKey(HistoryKey *memory) const {
+    if(memory)
+        return new (memory) KenLMHistoryKey(model->NullContextState());
+    else
+        return new KenLMHistoryKey(model->NullContextState());
+}
+
+size_t StaticLM::GetHistoryKeySize() const {
+    return sizeof(KenLMHistoryKey);
 }
 
 bool StaticLM::IsOOV(const context_t *context, const wid_t word) const {

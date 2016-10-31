@@ -20,8 +20,12 @@ HistoryKey *CachedLM::MakeHistoryKey(const vector<wid_t> &phrase) const {
     return lm->MakeHistoryKey(phrase);
 }
 
-HistoryKey *CachedLM::MakeEmptyHistoryKey() const {
-    return lm->MakeEmptyHistoryKey();
+HistoryKey *CachedLM::MakeEmptyHistoryKey(HistoryKey *memory) const {
+    return lm->MakeEmptyHistoryKey(memory);
+}
+
+size_t CachedLM::GetHistoryKeySize() const {
+    return lm->GetHistoryKeySize();
 }
 
 bool CachedLM::IsOOV(const context_t *context, const wid_t word) const {
