@@ -326,7 +326,7 @@ void MMTInterpolatedLM::EvaluateWhenApplied(const ManagerBase &mgr,
     HistoryKey *cursorHistoryKey = NULL;
 
     for (size_t position = 0; position < phrase_vec.size(); ++position) {
-        HistoryKey *outHistoryKey;
+        HistoryKey *outHistoryKey = NULL;
         double prob = lm->ComputeProbability(phrase_vec.at(position),
                                              cursorHistoryKey ? cursorHistoryKey : initialState,
                                              context_vec, &outHistoryKey);
@@ -350,7 +350,7 @@ void MMTInterpolatedLM::EvaluateWhenApplied(const ManagerBase &mgr,
         //if the phrase is too short, one StartSentenceSymbol (see startGaps) is added
         SetWordVector(hypo, ngram_vec, startGaps, 0, adjust_begin, end);
 
-        HistoryKey *outHistoryKey;
+        HistoryKey *outHistoryKey = NULL;
 
         HistoryKey *tmpHistoryKey = lm->MakeHistoryKey(ngram_vec);
         score += lm->ComputeProbability(kVocabularyEndSymbol, tmpHistoryKey, t_context_vec.get(), &outHistoryKey);

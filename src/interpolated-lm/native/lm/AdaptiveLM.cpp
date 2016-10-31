@@ -210,8 +210,11 @@ HistoryKey *AdaptiveLM::MakeEmptyHistoryKey(HistoryKey *memory) const {
         return new AdaptiveLMHistoryKey();
 }
 
-HistoryKey *AdaptiveLM::MakeHistoryKey(const vector<wid_t> &phrase) const {
-    return new AdaptiveLMHistoryKey(phrase, order);
+HistoryKey *AdaptiveLM::MakeHistoryKey(const vector<wid_t> &phrase, HistoryKey *memory) const {
+    if(memory)
+        return new ((AdaptiveLMHistoryKey *) memory) AdaptiveLMHistoryKey(phrase, order);
+    else
+        return new AdaptiveLMHistoryKey(phrase, order);
 }
 
 size_t AdaptiveLM::GetHistoryKeySize() const {

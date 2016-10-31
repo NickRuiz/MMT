@@ -36,7 +36,7 @@ namespace mmt {
                                      const context_t *context, HistoryKey **outHistoryKey,
                                      AdaptiveLMCache *cache) const;
 
-            virtual HistoryKey *MakeHistoryKey(const vector <wid_t> &phrase) const override;
+            virtual HistoryKey *MakeHistoryKey(const vector <wid_t> &phrase, HistoryKey *memory = nullptr) const override;
 
             virtual HistoryKey *MakeEmptyHistoryKey(HistoryKey *memory = nullptr) const override;
 

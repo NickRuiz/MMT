@@ -43,7 +43,7 @@ StaticLM::~StaticLM() {
     delete model;
 }
 
-HistoryKey *StaticLM::MakeHistoryKey(const vector<wid_t> &phrase) const {
+HistoryKey *StaticLM::MakeHistoryKey(const vector<wid_t> &phrase, HistoryKey *memory) const {
     lm::ngram::State state0 = model->NullContextState();
     lm::ngram::State state1;
 
@@ -60,7 +60,10 @@ HistoryKey *StaticLM::MakeHistoryKey(const vector<wid_t> &phrase) const {
         std::swap(state0, state1);
     }
 
-    return new KenLMHistoryKey(state0);
+    if(memory)
+        return new (memory) KenLMHistoryKey(state0);
+    else
+        return new KenLMHistoryKey(state0);
 }
 
 HistoryKey *StaticLM::MakeEmptyHistoryKey(HistoryKey *memory) const {

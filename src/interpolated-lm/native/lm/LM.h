@@ -35,7 +35,7 @@ namespace mmt {
             virtual float ComputeProbability(const wid_t word, const HistoryKey *historyKey, const context_t *context,
                                              HistoryKey **outHistoryKey) const = 0;
 
-            virtual HistoryKey *MakeHistoryKey(const vector <wid_t> &phrase) const = 0;
+            virtual HistoryKey *MakeHistoryKey(const vector <wid_t> &phrase, HistoryKey *memory = nullptr) const = 0;
 
             virtual HistoryKey *MakeEmptyHistoryKey(HistoryKey *memory = nullptr) const = 0;
 

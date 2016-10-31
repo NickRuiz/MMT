@@ -16,8 +16,8 @@ CachedLM::~CachedLM() {
     delete (AdaptiveLMCache *) cache;
 }
 
-HistoryKey *CachedLM::MakeHistoryKey(const vector<wid_t> &phrase) const {
-    return lm->MakeHistoryKey(phrase);
+HistoryKey *CachedLM::MakeHistoryKey(const vector<wid_t> &phrase, HistoryKey *memory) const {
+    return lm->MakeHistoryKey(phrase, memory);
 }
 
 HistoryKey *CachedLM::MakeEmptyHistoryKey(HistoryKey *memory) const {

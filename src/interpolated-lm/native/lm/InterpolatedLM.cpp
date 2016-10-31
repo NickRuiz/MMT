@@ -130,9 +130,18 @@ InterpolatedLM::~InterpolatedLM() {
     delete self;
 }
 
-HistoryKey *InterpolatedLM::MakeHistoryKey(const vector<wid_t> &phrase) const {
-    return new ILMHistoryKey(self->alm ? self->alm->MakeHistoryKey(phrase) : NULL,
-                                 self->slm ? self->slm->MakeHistoryKey(phrase) : NULL);
+HistoryKey *InterpolatedLM::MakeHistoryKey(const vector<wid_t> &phrase, HistoryKey *memory) const {
+  if(!memory) {
+      return new ILMHistoryKey(self->alm ? self->alm->MakeHistoryKey(phrase) : NULL,
+                               self->slm ? self->slm->MakeHistoryKey(phrase) : NULL);
+  }
+
+  char *ilmMem = (char *) memory;
+  char *almMem = ilmMem + sizeof(ILMHistoryKey);
+  char *slmMem = almMem + (self->alm ? self->alm->GetHistoryKeySize() : 0);
+
+  return new ((ILMHistoryKey *) ilmMem) ILMHistoryKey(self->alm ? self->alm->MakeHistoryKey(phrase, (HistoryKey *) almMem) : NULL,
+                                                      self->slm ? self->slm->MakeHistoryKey(phrase, (HistoryKey *) slmMem) : NULL);
 }
 
 HistoryKey *InterpolatedLM::MakeEmptyHistoryKey(HistoryKey *memory) const {
