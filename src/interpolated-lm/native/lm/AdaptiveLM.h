@@ -36,7 +36,7 @@ namespace mmt {
                                      const context_t *context, HistoryKey **outHistoryKey,
                                      AdaptiveLMCache *cache) const;
 
-            virtual HistoryKey *MakeHistoryKey(const vector <wid_t> &phrase, HistoryKey *memory = nullptr) const override;
+            virtual HistoryKey *MakeHistoryKey(const Phrase &phrase, HistoryKey *memory = nullptr) const override;
 
             virtual HistoryKey *MakeEmptyHistoryKey(HistoryKey *memory = nullptr) const override;
 
@@ -61,12 +61,12 @@ namespace mmt {
             BufferedUpdateManager updateManager;
 
             // Returns the probability (not in log space) of the ngram identified by the words
-            // in the range [start, end] stored in vector<wid_t>.
+            // in the range [start, end] stored in Phrase.
             // "start" is the position of the least recent word to be considered;
             // it must be larger than or equal to 0 and strictly lower than ngram.size().
             // "end" is the position of the most recent word to be considered;
             // it must be larger than or equal to 0 and strictly lower than ngram.size().
-            cachevalue_t ComputeProbability(const context_t *context, const vector <wid_t> &history, const wid_t word,
+            cachevalue_t ComputeProbability(const context_t *context, const Phrase &history, const wid_t word,
                                             const size_t start, const size_t end, AdaptiveLMCache *cache) const;
 
             cachevalue_t ComputeUnigramProbability(const context_t *context, dbkey_t wordKey) const;

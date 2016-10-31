@@ -16,15 +16,15 @@ static const size_t kDictionaryUpperBound = 10000000;
 namespace mmt {
     namespace ilm {
         struct AdaptiveLMHistoryKey : public HistoryKey {
-            vector<wid_t> words;
+            Phrase words;
 
             AdaptiveLMHistoryKey() {}
 
-            AdaptiveLMHistoryKey(const vector<wid_t> &ngram) {
+            AdaptiveLMHistoryKey(const Phrase &ngram) {
                 words = ngram;
             }
 
-            AdaptiveLMHistoryKey(const vector<wid_t> &ngram, size_t length) {
+            AdaptiveLMHistoryKey(const Phrase &ngram, size_t length) {
                 if (length > 0) {
                     size_t words_length = std::min(length, ngram.size());
                     size_t offset = ngram.size() - words_length;
@@ -34,7 +34,7 @@ namespace mmt {
                 }
             }
 
-            AdaptiveLMHistoryKey(vector<wid_t> history, const wid_t word, size_t length) {
+            AdaptiveLMHistoryKey(Phrase history, const wid_t word, size_t length) {
                 if (length > 0) {
                     size_t words_length = std::min(length, history.size() + 1);
                     size_t offset = history.size() - words_length + 1;
@@ -88,7 +88,7 @@ float AdaptiveLM::ComputeProbability(const wid_t word, const HistoryKey *history
     return result.probability > 0. ? log(result.probability) : kNaturalLogZeroProbability;
 }
 
-cachevalue_t AdaptiveLM::ComputeProbability(const context_t *context, const vector<wid_t> &history, const wid_t word,
+cachevalue_t AdaptiveLM::ComputeProbability(const context_t *context, const Phrase &history, const wid_t word,
                                             const size_t start, const size_t end, AdaptiveLMCache *cache) const {
     dbkey_t historyKey;
     dbkey_t ngramKey;
@@ -210,7 +210,7 @@ HistoryKey *AdaptiveLM::MakeEmptyHistoryKey(HistoryKey *memory) const {
         return new AdaptiveLMHistoryKey();
 }
 
-HistoryKey *AdaptiveLM::MakeHistoryKey(const vector<wid_t> &phrase, HistoryKey *memory) const {
+HistoryKey *AdaptiveLM::MakeHistoryKey(const Phrase &phrase, HistoryKey *memory) const {
     if(memory)
         return new ((AdaptiveLMHistoryKey *) memory) AdaptiveLMHistoryKey(phrase, order);
     else

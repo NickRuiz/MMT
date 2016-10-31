@@ -130,7 +130,7 @@ InterpolatedLM::~InterpolatedLM() {
     delete self;
 }
 
-HistoryKey *InterpolatedLM::MakeHistoryKey(const vector<wid_t> &phrase, HistoryKey *memory) const {
+HistoryKey *InterpolatedLM::MakeHistoryKey(const Phrase &phrase, HistoryKey *memory) const {
   if(!memory) {
       return new ILMHistoryKey(self->alm ? self->alm->MakeHistoryKey(phrase) : NULL,
                                self->slm ? self->slm->MakeHistoryKey(phrase) : NULL);

@@ -43,11 +43,11 @@ StaticLM::~StaticLM() {
     delete model;
 }
 
-HistoryKey *StaticLM::MakeHistoryKey(const vector<wid_t> &phrase, HistoryKey *memory) const {
+HistoryKey *StaticLM::MakeHistoryKey(const Phrase &phrase, HistoryKey *memory) const {
     lm::ngram::State state0 = model->NullContextState();
     lm::ngram::State state1;
 
-    for (vector<wid_t>::const_iterator it = phrase.begin(); it != phrase.end(); ++it) {
+    for (Phrase::const_iterator it = phrase.begin(); it != phrase.end(); ++it) {
         lm::WordIndex vocab;
 
         // convert integer wid_t code into lm::WordIndex (through a double conversion from/to std::string)

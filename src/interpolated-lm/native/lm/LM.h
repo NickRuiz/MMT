@@ -25,6 +25,8 @@ namespace mmt {
             virtual ~HistoryKey() {};
         };
 
+        typedef vector<wid_t> Phrase;
+
         const wid_t kVocabularyStartSymbol = 1;
         const wid_t kVocabularyEndSymbol = 2;
 
@@ -35,7 +37,7 @@ namespace mmt {
             virtual float ComputeProbability(const wid_t word, const HistoryKey *historyKey, const context_t *context,
                                              HistoryKey **outHistoryKey) const = 0;
 
-            virtual HistoryKey *MakeHistoryKey(const vector <wid_t> &phrase, HistoryKey *memory = nullptr) const = 0;
+            virtual HistoryKey *MakeHistoryKey(const Phrase &phrase, HistoryKey *memory = nullptr) const = 0;
 
             virtual HistoryKey *MakeEmptyHistoryKey(HistoryKey *memory = nullptr) const = 0;
 
