@@ -23,10 +23,18 @@ namespace mmt {
 
             const HistoryKey *alm_key;
             const HistoryKey *slm_key;
+            bool cleanup;
 
-            ILMHistoryKey(HistoryKey *alm_key, HistoryKey *slm_key) : alm_key(alm_key), slm_key(slm_key) {}
+            ILMHistoryKey(HistoryKey *alm_key, HistoryKey *slm_key, bool cleanup = true) : alm_key(alm_key), slm_key(slm_key), cleanup(cleanup) {}
 
             ~ILMHistoryKey() {
+                if(!cleanup) {
+                    // placement-new, memory managed from outside
+                    if(alm_key) alm_key->~HistoryKey();
+                    if(slm_key) slm_key->~HistoryKey();
+                    return;
+                }
+
                 if (alm_key != NULL)
                     delete alm_key;
                 if (slm_key != NULL)
@@ -144,7 +152,8 @@ HistoryKey *InterpolatedLM::MakeHistoryKey(const Phrase &phrase, HistoryKey *mem
   char *slmMem = almMem + (self->alm ? self->alm->GetHistoryKeySize() : 0);
 
   return new ((ILMHistoryKey *) ilmMem) ILMHistoryKey(self->alm ? self->alm->MakeHistoryKey(phrase, (HistoryKey *) almMem) : NULL,
-                                                      self->slm ? self->slm->MakeHistoryKey(phrase, (HistoryKey *) slmMem) : NULL);
+                                                      self->slm ? self->slm->MakeHistoryKey(phrase, (HistoryKey *) slmMem) : NULL,
+                                                      false);
 }
 
 HistoryKey *InterpolatedLM::MakeEmptyHistoryKey(HistoryKey *memory) const {
@@ -158,7 +167,8 @@ HistoryKey *InterpolatedLM::MakeEmptyHistoryKey(HistoryKey *memory) const {
     char *slmMem = almMem + (self->alm ? self->alm->GetHistoryKeySize() : 0);
 
     return new ((ILMHistoryKey *) ilmMem) ILMHistoryKey(self->alm ? self->alm->MakeEmptyHistoryKey((HistoryKey *) almMem) : NULL,
-                                      self->slm ? self->slm->MakeEmptyHistoryKey((HistoryKey *) slmMem) : NULL);
+                                                        self->slm ? self->slm->MakeEmptyHistoryKey((HistoryKey *) slmMem) : NULL,
+                                                        false);
 }
 
 size_t InterpolatedLM::GetHistoryKeySize() const {
@@ -226,7 +236,7 @@ float InterpolatedLM::ComputeProbability(const wid_t word, const HistoryKey *his
         result = alm_probability;
 
     if (outHistoryKey && *outHistoryKey)
-        new (*outHistoryKey) ILMHistoryKey(alm_key, slm_key);
+        new (*outHistoryKey) ILMHistoryKey(alm_key, slm_key, false);
     else if (outHistoryKey)
         *outHistoryKey = new ILMHistoryKey(alm_key, slm_key);
 

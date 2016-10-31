@@ -172,7 +172,7 @@ install(TARGETS ${PROJECT_NAME}
         LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
         ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
-install(FILES lm/LM.h lm/Options.h lm/InterpolatedLM.h lm/CachedLM.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/ilm)
+install(FILES lm/LM.h lm/Options.h lm/Phrase.h lm/InterpolatedLM.h lm/CachedLM.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/ilm)
 
 file(GLOB executables executables/*.cpp)
 foreach (exefile ${executables})
