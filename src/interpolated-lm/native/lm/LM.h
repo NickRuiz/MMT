@@ -25,7 +25,8 @@ namespace mmt {
             virtual ~HistoryKey() {};
         };
 
-        typedef vector<wid_t> Phrase;
+        //typedef vector<wid_t> Phrase;
+        class Phrase; // Phrase.h
 
         const wid_t kVocabularyStartSymbol = 1;
         const wid_t kVocabularyEndSymbol = 2;

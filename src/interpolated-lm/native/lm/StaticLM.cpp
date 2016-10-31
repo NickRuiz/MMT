@@ -3,6 +3,7 @@
 //
 
 #include "StaticLM.h"
+#include "Phrase.h"
 
 using namespace mmt::ilm;
 

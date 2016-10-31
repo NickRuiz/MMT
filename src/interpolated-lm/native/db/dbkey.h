@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <lm/LM.h>
+#include <lm/Phrase.h>
 
 namespace mmt {
     namespace ilm {
@@ -23,7 +24,7 @@ namespace mmt {
             return key == 0 ? 1 : key; // key "0" is reserved
         }
 
-        inline dbkey_t make_key(const vector<wid_t> &words, const size_t offset, const size_t size) {
+        inline dbkey_t make_key(const Phrase &words, const size_t offset, const size_t size) {
             dbkey_t key = make_key(words[offset]);
 
             for (size_t i = 1; i < size; ++i)
@@ -32,7 +33,7 @@ namespace mmt {
             return key;
         }
 
-        inline dbkey_t make_key(const vector<wid_t> &words, const size_t order) {
+        inline dbkey_t make_key(const Phrase &words, const size_t order) {
             const size_t offset = (size_t) std::max(0, (int) (words.size() - order));
             return make_key(words, offset, order);
         }

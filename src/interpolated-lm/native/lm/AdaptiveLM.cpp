@@ -2,9 +2,11 @@
 // Created by Nicola Bertoldi on 29/07/16.
 //
 
-#include "AdaptiveLM.h"
 #include <cmath>
 #include <iostream>
+
+#include "AdaptiveLM.h"
+#include "Phrase.h"
 
 using namespace std;
 using namespace mmt;

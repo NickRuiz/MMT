@@ -81,6 +81,9 @@ struct InterpolatedLM::ilm_private {
 };
 
 InterpolatedLM::InterpolatedLM(const string &modelPath, const Options &options) {
+    if (options.order > MMT_ILM_MAX_ORDER)
+        throw invalid_argument("Invalid order=" + std::to_string(options.order) + ", must be <= MMT_ILM_MAX_ORDER=" + std::to_string(MMT_ILM_MAX_ORDER));
+
     if (options.adaptivity_ratio < 0 || options.adaptivity_ratio > 1.)
         throw invalid_argument("Invalid adaptivity_ratio");
 

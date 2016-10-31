@@ -9,12 +9,15 @@
 #include <cstdint>
 #include <string>
 
+// controls the state size
+#define MMT_ILM_MAX_ORDER 5
+
 namespace mmt {
     namespace ilm {
 
         struct Options {
 
-            // N-Gram order of the Language Model
+            // N-Gram order of the Language Model.
             uint8_t order = 5;
 
             // This value controls the balance between the probabilities

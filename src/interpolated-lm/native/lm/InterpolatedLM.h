@@ -7,6 +7,7 @@
 
 #include "LM.h"
 #include "Options.h"
+#include "Phrase.h"
 #include <mmt/IncrementalModel.h>
 #include <cstdint>
 #include <vector>

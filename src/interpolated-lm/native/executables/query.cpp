@@ -129,7 +129,7 @@ int main(int argc, const char *argv[]) {
     size_t word_count = 0;
     float corpusProbability = 0.f;
 
-    vector<wid_t> sentenceBegin(1);
+    Phrase sentenceBegin(1);
     sentenceBegin.push_back(kVocabularyStartSymbol);
 
     while (reader.Read(line)) {
