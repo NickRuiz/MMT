@@ -93,7 +93,9 @@ float StaticLM::ComputeProbability(const wid_t word, const HistoryKey *historyKe
     lm::ngram::State state;
     float prob = model->FullScore(in_state, wordIndex, state).prob;
 
-    if (outHistoryKey)
+    if (outHistoryKey && *outHistoryKey)
+        new (*outHistoryKey) KenLMHistoryKey(word == kVocabularyEndSymbol ? model->NullContextState() : state);
+    else if (outHistoryKey)
         *outHistoryKey = new KenLMHistoryKey(word == kVocabularyEndSymbol ? model->NullContextState() : state);
 
     return prob * 2.30258509299405f; // log10 to natural log

@@ -184,6 +184,15 @@ float InterpolatedLM::ComputeProbability(const wid_t word, const HistoryKey *his
     HistoryKey *alm_key = NULL;
     HistoryKey *slm_key = NULL;
 
+    if(outHistoryKey && *outHistoryKey) {
+        char *ilmMem = (char *) *outHistoryKey;
+        char *almMem = ilmMem + sizeof(ILMHistoryKey);
+        char *slmMem = almMem + (self->alm ? self->alm->GetHistoryKeySize() : 0);
+
+        alm_key = (HistoryKey *) almMem;
+        slm_key = (HistoryKey *) slmMem;
+    }
+
     double result = kNaturalLogZeroProbability;
     float slm_probability = kNaturalLogZeroProbability;
     float alm_probability = kNaturalLogZeroProbability;
@@ -204,7 +213,9 @@ float InterpolatedLM::ComputeProbability(const wid_t word, const HistoryKey *his
     else if (use_alm) // we force alm_weight = 1.0
         result = alm_probability;
 
-    if (outHistoryKey)
+    if (outHistoryKey && *outHistoryKey)
+        new (*outHistoryKey) ILMHistoryKey(alm_key, slm_key);
+    else if (outHistoryKey)
         *outHistoryKey = new ILMHistoryKey(alm_key, slm_key);
 
     return (float) result;

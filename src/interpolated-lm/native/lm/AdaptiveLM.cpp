@@ -67,7 +67,9 @@ AdaptiveLM::AdaptiveLM(const string &modelPath, uint8_t order, size_t updateBuff
 float AdaptiveLM::ComputeProbability(const wid_t word, const HistoryKey *historyKey, const context_t *context,
                                      HistoryKey **outHistoryKey, AdaptiveLMCache *cache) const {
     if (context == nullptr || context->empty()) {
-        if (outHistoryKey)
+        if (outHistoryKey && *outHistoryKey)
+            new (*outHistoryKey) AdaptiveLMHistoryKey();
+        else if (outHistoryKey)
             *outHistoryKey = new AdaptiveLMHistoryKey();
 
         return kNaturalLogZeroProbability;
@@ -78,7 +80,9 @@ float AdaptiveLM::ComputeProbability(const wid_t word, const HistoryKey *history
 
     cachevalue_t result = ComputeProbability(context, inKey->words, word, 0, inKey->words.size(), cache);
 
-    if (outHistoryKey)
+    if (outHistoryKey && *outHistoryKey)
+      new (*outHistoryKey) AdaptiveLMHistoryKey(inKey->words, word, word == kVocabularyEndSymbol ? 0 : result.length);
+    else if (outHistoryKey)
         *outHistoryKey = new AdaptiveLMHistoryKey(inKey->words, word, word == kVocabularyEndSymbol ? 0 : result.length);
 
     return result.probability > 0. ? log(result.probability) : kNaturalLogZeroProbability;
