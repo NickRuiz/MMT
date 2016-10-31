@@ -120,7 +120,7 @@ namespace Moses2 {
         void TransformPhrase(const Phrase<Moses2::Word> &phrase, std::vector<wid_t> &phrase_vec, const size_t startGaps,
                              const size_t endGaps) const;
 
-        void SetWordVector(const Hypothesis &hypo, std::vector<wid_t> &phrase_vec, const size_t startGaps,
+        void SetWordVector(const Hypothesis &hypo, mmt::ilm::Phrase &phrase_vec, const size_t startGaps,
                            const size_t endGaps, const size_t from, const size_t to) const;
     };
 

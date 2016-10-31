@@ -30,6 +30,7 @@ namespace mmt {
             bool empty() const { return size_ == 0; }
             wid_t &operator[](size_t i) { return data_[i]; }
             const wid_t &operator[](size_t i) const { return data_[i]; }
+            wid_t at(size_t i) const { return data_[i]; }
             bool operator==(const Phrase &other) const { return size_ == other.size_ && !memcmp(data_, other.data_, size_); }
 
             iterator begin() { return data_; }

@@ -30,6 +30,7 @@ namespace mmt {
             ~ILMHistoryKey() {
                 if(!cleanup) {
                     // placement-new, memory managed from outside
+                    // note: dtor calls for completeness, actually these do nothing
                     if(alm_key) alm_key->~HistoryKey();
                     if(slm_key) slm_key->~HistoryKey();
                     return;
