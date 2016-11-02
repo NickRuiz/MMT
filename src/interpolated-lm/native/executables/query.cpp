@@ -135,15 +135,35 @@ int main(int argc, const char *argv[]) {
     while (reader.Read(line)) {
         line.push_back(kVocabularyEndSymbol);
 
-        HistoryKey *historyKey = lm.MakeHistoryKey(sentenceBegin);
+        uint8_t bufferTmp[lm.GetHistoryKeySize()];
+        HistoryKey *historyKey = lm.MakeHistoryKey(sentenceBegin, (HistoryKey *) bufferTmp);
         float sentenceProbability = 0.0;
 
+        uint8_t outStateBuffer[lm.GetHistoryKeySize()];
+
+        uint8_t buffer[lm.GetHistoryKeySize()];
+        //HistoryKey *cursorHistoryKey = NULL;
+
+        //HistoryKey *buf0 = outState.state;
+        HistoryKey *buf0 = (HistoryKey *) outStateBuffer;
+        HistoryKey *buf1 = (HistoryKey *) buffer;
+
+        // ensure that the last state written goes into outState.state (which is valid outside this scope)
+        if(line.size() % 2 == 0)
+            swap(buf0, buf1);
+
+        lm.MakeEmptyHistoryKey(buf1); // sentinel for dtor call
+
+
         for (auto word = line.begin(); word != line.end(); ++word) {
-            HistoryKey *outKey = NULL;
+            HistoryKey *outKey = lm.MakeEmptyHistoryKey(buf0);
 
             float wordProbability = lm.ComputeProbability(*word, historyKey, &args.context_map, &outKey);
 
-            delete historyKey;
+            //delete historyKey;
+            buf1->~HistoryKey(); // only needed for non-POD
+            swap(buf0, buf1);
+
             historyKey = outKey;
 
             cout << *word
@@ -154,10 +174,13 @@ int main(int argc, const char *argv[]) {
             sentenceProbability += wordProbability;
             ++word_count;
         }
+        assert(historyKey == (HistoryKey *) outStateBuffer);
 
         corpusProbability += sentenceProbability;
 
-        delete historyKey;
+        //delete historyKey;
+        historyKey->~HistoryKey();
+        
         cout << endl;
     }
 
