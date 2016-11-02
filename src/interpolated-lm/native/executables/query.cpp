@@ -139,7 +139,7 @@ int main(int argc, const char *argv[]) {
         float sentenceProbability = 0.0;
 
         for (auto word = line.begin(); word != line.end(); ++word) {
-            HistoryKey *outKey;
+            HistoryKey *outKey = NULL;
 
             float wordProbability = lm.ComputeProbability(*word, historyKey, &args.context_map, &outKey);
 
