@@ -47,36 +47,32 @@ using namespace Moses;
 namespace Moses2 {
 
 class ILMState : public FFState {
-    friend class MMTInterpolatedLM;
+  friend class MMTInterpolatedLM;
 
-    friend ostream &operator<<(ostream &out, const ILMState &obj);
+  friend ostream &operator<<(ostream &out, const ILMState &obj);
 
 public:
-    size_t hash() const {
+  size_t hash() const {
       return state->hash();
-    }
+  }
 
-    bool operator==(const FFState &o) const {
+  bool operator==(const FFState &o) const {
       const ILMState &other = static_cast<const ILMState &>(o);
       return (*state == *(other.state));
-    }
+  }
 
-    ILMState(HistoryKey *st) : state(st) {}
+  ILMState(HistoryKey *st) : state(st) {}
 
-    virtual ~ILMState() {
-        // state holds pool-backed memory, so no need to release it (and MUST NOT be deleted)
-        state->~HistoryKey();
-        // note: dtor call not needed for POD-only state
-    }
+  ILMState(shared_ptr<HistoryKey> &st) : state(st) {}
 
-    virtual std::string ToString() const override {
+  virtual std::string ToString() const override {
       stringstream ss;
       ss << state;
       return ss.str();
-    }
+  }
 
 private:
-    HistoryKey *state;
+  shared_ptr<HistoryKey> state;
 };
 
 // friend
@@ -116,7 +112,24 @@ void MMTInterpolatedLM::Load(System &system) {
 FFState *MMTInterpolatedLM::BlankState(MemPool &pool, const System &sys) const {
     mmt::ilm::Phrase phrase(1);
     phrase[0] = kVocabularyStartSymbol;
-    return new(pool.Allocate<ILMState>()) ILMState(m_lm->MakeHistoryKey(phrase, (HistoryKey *) pool.Allocate(m_lm->GetHistoryKeySize())));
+
+    /*
+     * TODO: avoid putting non-POD data into state
+     *
+     * moses2 is working with memory pools: you allocate state objects in one blob
+     * you never actually delete them, since all are PODs
+     *
+     * but HistoryKey contains, eventually, a vector<wid_t>
+     * ideally, that would all be pool-allocated / struct with array of fixed number of words
+     *
+     * options:
+     * 1) create an interface to tell the MemPool our state size
+     * 2) use compile time constants to fix our state size
+     *
+     * -- David <git@abanbytes.eu>
+     *
+     */
+    return new(pool.Allocate<ILMState>()) ILMState(m_lm->MakeHistoryKey(phrase));
 }
 
 void MMTInterpolatedLM::EmptyHypothesisState(FFState &state, const ManagerBase &mgr,
@@ -125,12 +138,12 @@ void MMTInterpolatedLM::EmptyHypothesisState(FFState &state, const ManagerBase &
     mmt::ilm::Phrase phrase(1);
     phrase[0] = kVocabularyStartSymbol;
     ILMState &ourState = static_cast<ILMState &>(state);
-    // to do: if there was no "system pool", this could well just re-use existing state memory. BlankState() has been called on it before.
-    ourState.state = m_lm->MakeHistoryKey(phrase, (HistoryKey *) mgr.GetPool().Allocate(m_lm->GetHistoryKeySize()));
+    // TODO: avoid putting non-POD data into state -- see above comment in BlankState()
+    ourState.state.reset(m_lm->MakeHistoryKey(phrase));
 }
 
 void
-MMTInterpolatedLM::TransformPhrase(const Phrase<Moses2::Word> &phrase, std::vector<wid_t> &phrase_vec,
+MMTInterpolatedLM::TransformPhrase(const Phrase<Moses2::Word> &phrase, mmt::ilm::Phrase &phrase_vec,
                                    const size_t startGaps,
                                    const size_t endGaps) const {
     for (size_t i = 0; i < startGaps; ++i) {
@@ -175,7 +188,7 @@ MMTInterpolatedLM::CalcScore(const Phrase<Moses2::Word> &phrase, float &fullScor
 
     if (phrase.GetSize() == 0) return;
 
-    std::vector<wid_t> phrase_vec;
+    mmt::ilm::Phrase phrase_vec;
     TransformPhrase(phrase, phrase_vec, 0, 0);
 
     size_t boundary = m_nGramOrder - 1;
@@ -270,11 +283,10 @@ void MMTInterpolatedLM::EvaluateWhenApplied(const ManagerBase &mgr,
             "FFState* MMTInterpolatedLM::EvaluateWhenApplied(const Hypothesis &hypo, const FFState *ps, ScoreComponentCollection *out) const"
                 << std::endl);
 
-    ILMState &outState = static_cast<ILMState &>(state);
-
     if (hypo.GetTargetPhrase().GetSize() == 0) {
         //ILMState &inState = const_cast<ILMState &>(static_cast<const ILMState &>(prevState));
         const ILMState &inState = static_cast<const ILMState &>(prevState);
+        ILMState &outState = static_cast<ILMState &>(state);
         outState.state = inState.state;
     }
 
@@ -310,34 +322,19 @@ void MMTInterpolatedLM::EvaluateWhenApplied(const ManagerBase &mgr,
     double score = 0.0;
 
     const ILMState &inState = static_cast<const ILMState &>(prevState);
-    HistoryKey *initialState = inState.state;
-
-    uint8_t buffer[lm->GetHistoryKeySize()];
+    HistoryKey *initialState = inState.state.get();
     HistoryKey *cursorHistoryKey = NULL;
 
-    HistoryKey *buf0 = outState.state;
-    HistoryKey *buf1 = (HistoryKey *) buffer;
-
-    // ensure that the last state written goes into outState.state (which is valid outside this scope)
-    if(phrase_vec.size() % 2 == 0)
-      swap(buf0, buf1);
-
-    lm->MakeEmptyHistoryKey(buf1); // sentinel for dtor call
-
     for (size_t position = 0; position < phrase_vec.size(); ++position) {
-        HistoryKey *outHistoryKey = lm->MakeEmptyHistoryKey(buf0);
-
+        HistoryKey *outHistoryKey = NULL;
         double prob = lm->ComputeProbability(phrase_vec.at(position),
                                              cursorHistoryKey ? cursorHistoryKey : initialState,
                                              context_vec, &outHistoryKey);
-
-        buf1->~HistoryKey(); // only needed for non-POD
-        swap(buf0, buf1);
-
+        if (cursorHistoryKey)
+            delete cursorHistoryKey;
         cursorHistoryKey = outHistoryKey;
         score += prob;
     }
-    assert(cursorHistoryKey == outState.state || cursorHistoryKey == NULL);
 
     // adding probability of having sentenceEnd symbol, after this phrase;
     // this could happen only when all source words are covered
@@ -353,13 +350,15 @@ void MMTInterpolatedLM::EvaluateWhenApplied(const ManagerBase &mgr,
         //if the phrase is too short, one StartSentenceSymbol (see startGaps) is added
         SetWordVector(hypo, ngram_vec, startGaps, 0, adjust_begin, end);
 
-        if (cursorHistoryKey)
-            cursorHistoryKey->~HistoryKey(); // only needed for non-POD
+        HistoryKey *outHistoryKey = NULL;
 
-        uint8_t bufferTmp[lm->GetHistoryKeySize()];
-        HistoryKey *tmpHistoryKey = lm->MakeHistoryKey(ngram_vec, (HistoryKey *) bufferTmp);
-        score += lm->ComputeProbability(kVocabularyEndSymbol, tmpHistoryKey, t_context_vec.get(), &cursorHistoryKey);
-        tmpHistoryKey->~HistoryKey(); // only needed for non-POD
+        HistoryKey *tmpHistoryKey = lm->MakeHistoryKey(ngram_vec);
+        score += lm->ComputeProbability(kVocabularyEndSymbol, tmpHistoryKey, t_context_vec.get(), &outHistoryKey);
+        delete tmpHistoryKey;
+
+        if (cursorHistoryKey)
+            delete cursorHistoryKey;
+        cursorHistoryKey = outHistoryKey;
     } else {
         // need to set the LM state
         if (adjust_end < end) { // the LMstate of this target phrase refers to the last m_lmtb_size-1 words
@@ -375,14 +374,15 @@ void MMTInterpolatedLM::EvaluateWhenApplied(const ManagerBase &mgr,
             SetWordVector(hypo, ngram_vec, 0, 0, adjust_begin, end);
 
             if (cursorHistoryKey)
-                cursorHistoryKey->~HistoryKey(); // only needed for non-POD
-            cursorHistoryKey = lm->MakeHistoryKey(ngram_vec, cursorHistoryKey);
+                delete cursorHistoryKey;
+            cursorHistoryKey = lm->MakeHistoryKey(ngram_vec);
         }
     }
 
     scores.PlusEquals(mgr.system, *this, score); // score is already expressed as natural log probability
 
-    assert(outState.state == cursorHistoryKey);
+    ILMState &outState = static_cast<ILMState &>(state);
+    outState.state.reset(cursorHistoryKey);
 }
 
 void MMTInterpolatedLM::InitializeForInput(const Manager &mgr) const {
